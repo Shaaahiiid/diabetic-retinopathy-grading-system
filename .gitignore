@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+.conda/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Models and outputs
+*.pth
+*.pt
+*.ckpt
+
+# Notebook noise
+.ipynb_checkpoints/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS / editor files
+.DS_Store
+.vscode/
+.idea/
