@@ -4,8 +4,6 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-
-# Shared image transform used by training and inference.
 def get_transforms():
     return transforms.Compose([
         transforms.Resize((224, 224)),
@@ -16,7 +14,6 @@ def get_transforms():
 
 
 class RetinaDataset(Dataset):
-    # Reads image names and labels from a CSV file.
     def __init__(self, csv_file, image_dir):
         self.data = pd.read_csv(csv_file)
         self.image_dir = image_dir
