@@ -1,16 +1,26 @@
 # Diabetic Retinopathy Grading System
 
-A beginner-friendly computer vision project that grades retinal fundus images into 5 diabetic retinopathy classes using PyTorch, visualizes model attention with Grad-CAM, and serves predictions through both Streamlit and FastAPI.
+A computer vision system for grading retinal fundus images into diabetic retinopathy severity levels. The project uses an EfficientNet-B3 PyTorch model for image classification, Grad-CAM for visual explainability, a FastAPI backend for inference, and a Streamlit interface for image upload and result display.
 
 ## Features
 
-- EfficientNet-B3 based diabetic retinopathy grading
-- 5 output classes: `0` to `4`
-- Grad-CAM heatmap for visual explainability
-- Streamlit frontend for quick interactive testing
-- FastAPI backend with `/predict` and `/health`
-- Gemini-generated clinical support report
-- Kaggle notebook workflow for training on APTOS 2019
+- Retinal image classification into 5 diabetic retinopathy grades
+- EfficientNet-B3 inference with PyTorch
+- Grad-CAM heatmap generation using pure PyTorch hooks
+- FastAPI backend with image upload prediction endpoint
+- Streamlit frontend for interactive image assessment
+- Gemini API integration for clinical report generation
+- Dark Streamlit UI configuration
+
+## Severity Classes
+
+| Grade | Class |
+| --- | --- |
+| 0 | No DR |
+| 1 | Mild |
+| 2 | Moderate |
+| 3 | Severe |
+| 4 | Proliferative DR |
 
 ## Tech Stack
 
@@ -19,6 +29,7 @@ A beginner-friendly computer vision project that grades retinal fundus images in
 - FastAPI, uvicorn
 - Streamlit
 - OpenCV, Pillow
+- Pydantic
 - Google Gemini API
 
 ## Project Structure
@@ -26,9 +37,9 @@ A beginner-friendly computer vision project that grades retinal fundus images in
 ```text
 DiabeticRetina/
 ├── app.py
-├── train.py
 ├── dataset.py
 ├── model.py
+├── train.py
 ├── gradcam.py
 ├── kaggle_retina_notebook.ipynb
 ├── backend/
@@ -39,30 +50,32 @@ DiabeticRetina/
 │   ├── schemas.py
 │   ├── config.py
 │   └── requirements.txt
-└── .streamlit/config.toml
+└── .streamlit/
+    └── config.toml
 ```
 
 ## Dataset
 
-This project was trained using the `APTOS 2019 Blindness Detection` retinal image dataset on Kaggle.
+The model was trained on the APTOS 2019 retinal fundus image dataset from Kaggle. The dataset contains retinal images labeled from grade `0` to grade `4`.
 
-## Local Setup
+## Model
 
-1. Create and activate a virtual environment:
+- Architecture: EfficientNet-B3
+- Output classes: 5
+- Loss function: CrossEntropyLoss
+- Optimizer: Adam
+- Validation metric: accuracy
+- Best validation accuracy: 83.6%
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+The trained checkpoint should be placed in the project root as:
+
+```text
+best_model.pth
 ```
 
-2. Install backend dependencies:
+## Environment Variables
 
-```bash
-python -m pip install -r backend/requirements.txt
-python -m pip install streamlit pandas
-```
-
-3. Add your environment variables in `.env`:
+Create a `.env` file in the project root:
 
 ```env
 GEMINI_API_KEY=your_key_here
@@ -70,9 +83,16 @@ GEMINI_MODEL=gemini-2.5-flash
 MODEL_PATH=best_model.pth
 ```
 
-4. Make sure `best_model.pth` is in the project root.
+## Installation
 
-## Run the Backend
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r backend/requirements.txt
+python -m pip install streamlit pandas
+```
+
+## Run Backend
 
 ```bash
 source .venv/bin/activate
@@ -85,39 +105,70 @@ Health check:
 curl http://127.0.0.1:8000/health
 ```
 
-## Run the Streamlit App
+## Run Streamlit App
+
+Start the backend first, then run:
 
 ```bash
 source .venv/bin/activate
 python -m streamlit run app.py
 ```
 
-## API Endpoints
+## API Reference
 
-- `GET /health`
-- `POST /predict`
+### GET `/health`
 
-The prediction response includes:
+Returns backend status and model loading state.
 
-- predicted grade
-- grade name
-- confidence
-- base64 Grad-CAM image
-- Gemini-generated clinical report
+```json
+{
+  "status": "ok",
+  "model_loaded": true
+}
+```
+
+### POST `/predict`
+
+Accepts a retinal image as multipart form data.
+
+Request:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/predict" \
+  -F "file=@sample_retina.png"
+```
+
+Response:
+
+```json
+{
+  "grade": 2,
+  "grade_name": "Moderate",
+  "confidence": 0.87,
+  "gradcam_image": "<base64_png>",
+  "report": "Clinical report text"
+}
+```
 
 ## Training
 
-Model training was done in Kaggle using GPU because the APTOS dataset is large. The provided notebook:
+Training can be run locally if the dataset is available:
 
-- loads the dataset
-- trains EfficientNet-B3
-- saves `best_model.pth`
-- runs a sample Grad-CAM prediction
+```bash
+python train.py \
+  --csv_file train.csv \
+  --image_dir train_images \
+  --save_path best_model.pth
+```
 
-## Resume Bullet
+For Kaggle-based training, use:
 
-`Built a Diabetic Retinopathy Grading System using PyTorch, EfficientNet-B3, FastAPI, and Streamlit; trained on the APTOS 2019 dataset, achieved 83.6% validation accuracy, and added Grad-CAM plus Gemini-generated clinical support reports for explainable predictions.`
+```text
+kaggle_retina_notebook.ipynb
+```
 
-## Important Note
+## Notes
 
-This is a portfolio and educational project, not a clinical diagnostic tool. Predictions, confidence scores, and generated reports should not be treated as medical advice.
+- `best_model.pth` is not included in the repository.
+- `.env` is ignored and should not be committed.
+- The clinical report is generated from model output and should be reviewed by qualified professionals before use in any clinical workflow.
