@@ -3,12 +3,9 @@ import torch
 from PIL import Image
 from dataset import get_transforms
 
-
-# Creates a Grad-CAM heatmap and overlays it on the original image.
 def make_gradcam(model, image_path, device):
     activations, gradients = [], []
-
-    # Save feature maps and gradients from the last EfficientNet block.
+    
     def forward_hook(_, __, output):
         activations.append(output.detach())
 

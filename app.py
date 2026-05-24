@@ -19,8 +19,6 @@ BACKEND_URL = os.getenv("BACKEND_URL")
 MODEL_PATH = os.getenv("MODEL_PATH", "best_model.pth")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-
-# Send the uploaded image to the FastAPI backend as multipart form-data.
 def predict_via_api(uploaded_file):
     file_bytes = uploaded_file.getvalue()
     content_type = mimetypes.guess_type(uploaded_file.name)[0] or "image/png"
@@ -113,7 +111,6 @@ st.title("Diabetic Retinopathy Grading System")
 uploaded_file = st.file_uploader("Upload a retinal image", ["png", "jpg", "jpeg"])
 
 if uploaded_file:
-    # Show the user image first, then ask the backend for results.
     image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Uploaded image", use_container_width=True)
     try:
